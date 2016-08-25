@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+/* CSS goes here. */
+.ttip{
+  font-size: 1.5em;
+  font-family: Helvetica, sans-serif;
+  color: #ff0000;
+  font-weight: bold;
+}
+
+.circle_pin
+{
+  stroke: black;
+  stroke-width: 1;
+  /*fill: #C390D4;*/
+}
+
+div.tooltip {  
+    position: absolute;     
+    text-align: center;     
+    width: 60px;          
+    height: 28px;         
+    padding: 2px;       
+    font: 12px sans-serif;    
+    background: lightsteelblue; 
+    border: 0px;    
+    border-radius: 8px;     
+    pointer-events: none;     
+}
+
+h1{
+  margin-top: 10px;
+  margin-left: 5px;
+  font-family: Helvetica, sans-serif;
+}
+
+#myProgress {
+  position: absolute;
+  width: 50%;
+  height: 30px;
+  background-color: #ddd;
+  margin-left: 125px;
+}
+
+
+
+#myBar {
+  position: absolute;
+  width: 10%;
+  height: 100%;
+  background-color: #4CAF50;
+}
+
+#label {
+  text-align: center;
+  line-height: 30px;
+  color: white;
+}
+
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script src="tooltip.js"></script>
+<script src="global_vars.js"></script>
+<h1> Every Block activity for Chicago over the past 5 days </h1>
+<script>
+var width = 960,
+    height = 650;
+
+var hooddata = d3.map();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var progress = d3.select("body").append("div")
+  .attr("id", "myProgress")
+  .append("div").attr("id", "myBar").append("div").attr("id", "label").text("0%");
+
+
+// Define the div for the tooltip
+var div = d3.select("body").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
+
+var defaultFill = "C390D4";
+var mouseoverFill ="E9DDED";
+var latLongPoints = [];
+var pointsArrived = 0;
+var mapdrawn =0;
+var itemsReturned =0;
+var totalRecords =0;
+var processedRecords=0;
+
+var proj = d3.geo.albers()
+  .center([0, 41.84])
+  .rotate([87.65, 0])
+  .parallels([40, 45])
+  .scale(100000)
+  .translate([width /2, height/2]);
+
+function normalizeName(name)
+{
+  var result = name.toLowerCase();
+  result = result.split(" ").join("-");
+  return result;
+}
+
+function findLocation(url)
+{
+  var parts =url.split("locations")[1].split("/");
+  for(var i =0; i < parts.length; i++)
+  {
+    if(parts[i] == "timeline")
+    {
+      return parts[i-1];
+    }
+  }
+  return "";
+}
+
+function drawCircles()
+{
+
+  svg.selectAll("circles.points")
+  .data(latLongPoints)
+  .enter()
+  .append("circle")
+  .attr("r",1)
+  .attr("class", "circle_pin")
+  .attr("transform", function(d) {return "translate(" + proj([d[0].longitude,d[0].latitude]) + ")";});
+}
+
+function drawCircles2(long, lat)
+{
+  var longlat = [long, lat];
+  svg.selectAll("circles.points")
+  .data([longlat]).enter()
+  .append("circle")
+  .attr("r",0.5)
+  .attr("class", "circle_pin")
+  .attr("transform", function(d) {return "translate(" + proj(d) + ")";});
+}
+var width =0;
+function move(amtdone) {
+  var elem = document.getElementById("myBar");   
+  width = amtdone;
+  var id = setInterval(frame, 10);
+  function frame() {
+    if (width >= 100) {
+      clearInterval(id);
+    } else {
+      //width=amtdone; 
+      elem.style.width = width + '%'; 
+      document.getElementById("label").innerHTML = width * 1  + '%';
+    }
+  }
+}
+
+function processData(data)
+{
+   for(i = 0; i < data.results.length; i++)
+      {
+        processedRecords++;
+        if(processedRecords % 1000 == 0 || processedRecords > 2000000)
+          move(parseInt(processedRecords/totalRecords * 100, 10));
+
+        var long = data.results[i].location_coordinates[0].longitude;
+        var lat = data.results[i].location_coordinates[0].latitude;
+        if(isNaN(long) || isNaN(lat))
+          continue;
+
+        drawCircles2(long, lat);
+      }
+     
+}
+
+
+function fetchData(url)
+{
+  //this fetch gets us the first result page in the url chain.
+  //there are only 25 results per page we need to keep fetching 
+  //until we have recieved all results.
+  d3.json(url, function(error,data){
+
+    if(error)
+      return;
+    totalRecords+=data.count;
+    processData(data);
+    if(data.next)
+    {
+      //recursive call so that we fetch the next page
+      fetchData(data.next);
+    }
+   });
+}
+
+/* JavaScript goes here. */
+d3.json("data/chicago3.json", function(error, chicago) {
+  if (error) return console.error("ERROR");
+  //console.log(chicago);
+
+  svg.selectAll("path")
+      .data(chicago.features)
+      .enter().append("path")
+      .attr("d", d3.geo.path().projection(proj))
+      .attr("id", function(d){
+          return d.properties.name;
+      })
+      .style("fill", function(d){
+          //insert hood color fill here
+          return defaultFill;
+      })
+      .style("stroke", "white")
+      .on("mouseover", function(d) {    
+            div.transition()    
+                .duration(200)    
+                .style("opacity", .9);    
+            div .html(d.properties.name + "<br/>")  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY - 28) + "px");  
+            d3.select(this).style({fill: mouseoverFill});
+            })          
+        .on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", .0); 
+            d3.select(this).style({fill: defaultFill});
+        })
+      .on("click", function(d)
+      { 
+          alert(d.properties.name);
+      });
+
+  for(var x =0; x < MYAPP.globals.HOOD_NAMES.length; x++)
+  {
+    var hoodName = MYAPP.globals.HOOD_NAMES[x].trim();
+    var url = MYAPP.globals.URL_HEAD;
+    url = url.concat(hoodName);
+    url = url.concat(MYAPP.globals.TIME_PART);
+    url = url.concat(MYAPP.globals.API_KEY);
+
+    fetchData(url);
+  }
+
+  move(100);
+
+});
+
+
+// hoodname -> object propName -> count
+
+
+</script>
