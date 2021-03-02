@@ -1,0 +1,10 @@
+//static variables
+// you will need to get an API key from EveryBlock.com
+var MYAPP ={};
+MYAPP.globals={
+	"API_KEY":'ADD_YOUR_API_KEY_HERE',
+	"URL_HEAD":'https://api.everyblock.com/content/chicago/locations/',
+	"TIME_PART":'/timeline/?token=',
+	"HOOD_NAMES":["printers-row", "west-humboldt-park", "humboldt-park", "east-garfield-park", "garfield-ridge", "west-garfield-park", "lawndale", "little-village", "avalon-park", "burnside", "calumet-heights", "pullman", "riverdale", "hegewisch", "douglas-park", " oakland", "fuller-park", "west-woodlawn", "woodlawn", "portage-park", "hermosa", "avondale", "logan-square", "university-village-little-ita", "kenwood", "rogers-park", "jefferson-park", "sauganash-woods", "sauganash", "north-park", "irving-park", "dunning", "west-rogers-park", "uptown", "norwood-park-east", "norwood-park-west", "old-norwood-park", "streeterville", "south-shore", "west-chatham", "west-de-paul", "chatham", "east-chatham", "south-chicago", "roseland", "northcenter", "south-deering", "east-side", "pullman", "west-pullman", "east-garfield-park", "garfield-ridge", "new-east-side", "west-englewood", "englewood", "grand-crossing", "ashburn", "mount-greenwood", "mount-greenwood-heights", "west-morgan-park", "morgan-park", "ohare", "jefferson-park", "jackson-park-highlands", "south-loop", "the-loop", "greektown", "edgewater", "edgewater-beach", "edgewater-glen", "lake-view", "lake-view-east", "lathrop-homes", "lincoln-park", "lincoln-square", "magnificent-mile", "washington-park", "south-loop", "chicago-lawn", "chinatown", "gresham", "west-beverly", "beverly", "washington-heights", "edison-park", "hyde-park", "west-loop-gate", "bucktown",
+"wrigleyville", "andersonville", "archer-heights", "brighton-park", "bronzeville", "mckinley-park", "bridgeport", "west-elsdon", "west-englewood","west-garfield-park", "west-humboldt-park", "gage-park", "clearing-e", "clearing-w", "west-lawn", "east-ukrainian-village", "little-village", "west-town", "wicker-park", "galewood", "montclare", "boystown", "north-austin", "south-austin", "austin", "ukrainian-village", "old-town", "gold-coast", "river-north" ],
+};
